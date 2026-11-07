@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MinesyncHost</title>
+<link rel="icon" href="/icon.png">
+<style>
+:root{--bg:#0b0e14;--card:#131824;--card2:#1a2030;--ink:#eef1f7;--mut:#94a0b6;--line:#252d3d;--acc:#ff8a1f;--acc2:#ffb066;--ok:#2fb36a;--bad:#e5484d;--warn:#f5a524;--shadow:0 10px 30px rgba(0,0,0,.35);color-scheme:dark}
+body.light{--bg:#f3f5f9;--card:#fff;--card2:#f1f4f9;--ink:#131823;--mut:#5b667a;--line:#e1e6ef;--shadow:0 10px 30px rgba(20,30,60,.08);color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 60px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+header img{width:40px;height:40px;border-radius:10px}
+header h1{font-size:19px;margin:0;line-height:1.2}header small{color:var(--mut)}
+.sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:600;background:var(--card2);color:var(--mut);border:1px solid var(--line);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}.pill.warn{color:var(--warn)}
+.pill i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:12px;box-shadow:var(--shadow)}
+.card h2{font-size:15px;margin:0;display:flex;align-items:center;gap:8px}
+.mut{color:var(--mut)}.sm{font-size:12.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 15px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font:600 13.5px system-ui,sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}.btn.pri:hover{filter:brightness(1.07)}.btn.bad{color:var(--bad)}.btn.sm{height:32px;padding:0 11px;font-size:12.5px}
+.btn:disabled{opacity:.55;cursor:default}
+input{width:100%;height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font:14px system-ui,sans-serif}
+input:focus{outline:2px solid color-mix(in srgb,var(--acc) 55%,transparent);border-color:var(--acc)}
+label.f{display:grid;gap:5px}label.f span{font-size:12.5px;color:var(--mut);font-weight:600}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;background:var(--card2);padding:4px;border-radius:12px;border:1px solid var(--line)}
+.tab{flex:1;height:34px;border:0;border-radius:9px;background:transparent;color:var(--mut);font:600 13px system-ui,sans-serif;cursor:pointer}
+.tab.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.spec{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.spec small{display:block;color:var(--mut);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.spec b{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:10px;border-radius:99px;background:var(--card2);overflow:hidden;display:flex;border:1px solid var(--line)}
+.bar i{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;background:var(--c);vertical-align:-1px}
+.note{border-left:3px solid var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent);padding:10px 12px;border-radius:8px;font-size:13px}
+.big{font-size:22px;font-weight:700;letter-spacing:.06em}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);padding:11px 16px;border-radius:12px;z-index:50;max-width:92vw}
+.toast.bad{border-color:var(--bad);color:var(--bad)}
+.modal{position:fixed;inset:0;background:rgba(5,8,14,.6);display:grid;place-items:center;z-index:40;padding:16px}
+.modal .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:440px;width:100%;display:grid;gap:14px;box-shadow:var(--shadow)}
+.modal h3{margin:0;font-size:16px}
+.spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;display:inline-block}@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:560px){header{flex-wrap:wrap}.tab{font-size:12px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="root"></div>
+<script>
+'use strict';
+const TT = {
+  pt: { title: 'MinesyncHost', sub: 'host da rede MineSync', conn: { connected: 'Conectado à central', connecting: 'Conectando…', on: 'Conectado à central', error: 'Sem conexão', off: 'Desligado' },
+    account: 'Conta', linked: 'Vinculada à conta', unlinked: 'Sem conta vinculada', unlinkedD: 'Sem conta, depois de 5 minutos conectado este computador vira uma host grátis da rede (todos os recursos, menos a reserva do sistema) e entra no mercado.',
+    linkedD: 'Tudo o resto (recursos, reserva do sistema, seu servidor grátis, rede, Cloudflare, IP fixo e portas) é configurado pelo site, em Hosts › Máquinas.',
+    site: 'Pelo site', creds: 'Usuário e senha', code: 'Código', siteD: 'Abre o site já logado: é só confirmar.', siteBtn: 'Entrar pelo site', waiting: 'Esperando você confirmar no site…',
+    user: 'Usuário ou e-mail da central', pass: 'Senha', login: 'Entrar e vincular', codeD: 'Gere o código no site (Hosts › Minhas hosts › Gerar código) e cole aqui.', codeIn: 'Código', link: 'Vincular',
+    open: 'Abrir no site', unlink: 'Desvincular', unlinkQ: 'Desvincular este computador da sua conta? Os servidores continuam na central; o seu servidor grátis desta máquina para de ser seu.', cancel: 'Cancelar', confirm: 'Confirmar',
+    machine: 'Esta máquina', remeasure: 'Medir de novo', measuring: 'Medindo…', os: 'Sistema', cpu: 'Processador', ghz: 'GHz máx.', threads: 'Núcleos / threads', ram: 'RAM', disk: 'Disco', diskSpeed: 'Escrita / leitura', net: 'Internet', ping: 'Ping até a central', isolation: 'Isolamento', strong: 'forte (bubblewrap)', basic: 'básico (pasta própria)', bwrap: 'Para o isolamento forte no Linux: sudo apt install bubblewrap',
+    split: 'Divisão dos recursos', sys: 'Sistema (reserva)', yours: 'Seu servidor grátis', network: 'Rede (à venda)', servers: 'servidores da central nesta máquina', running: 'ligados',
+    central: 'Endereço da central', centralD: 'Só troque se você usa outra central. Trocar desvincula esta máquina da conta atual.', save: 'Salvar', reset: 'Voltar ao padrão', saved: 'Salvo', linkedOk: 'Vinculado!',
+    err: { local_only: 'Abra este painel só neste computador (localhost).', bad_central: 'Endereço inválido', invalid_credentials: 'Usuário ou senha inválidos', bad_code: 'Código inválido', invalid_code: 'Código inválido ou vencido', too_many_attempts: 'Tentativas demais, espere um pouco', central_offline: 'A central não respondeu', link_expired: 'O pedido venceu, tente de novo', denied: 'Recusado no site', missing_credentials: 'Preencha usuário e senha' } },
+  en: { title: 'MinesyncHost', sub: 'MineSync network host', conn: { connected: 'Connected to the central', connecting: 'Connecting…', on: 'Connected to the central', error: 'Not connected', off: 'Off' },
+    account: 'Account', linked: 'Linked to', unlinked: 'No account linked', unlinkedD: 'Without an account, after 5 minutes online this computer becomes a free network host (all resources except the system reserve) and joins the market.',
+    linkedD: 'Everything else (resources, system reserve, your free server, network, Cloudflare, fixed IP and ports) is set on the website, in Hosts › Machines.',
+    site: 'Website', creds: 'User and password', code: 'Code', siteD: 'Opens the website already signed in: just confirm.', siteBtn: 'Sign in with the website', waiting: 'Waiting for you to confirm on the website…',
+    user: 'Central user or e-mail', pass: 'Password', login: 'Sign in and link', codeD: 'Generate the code on the website (Hosts › My hosts › Generate code) and paste it here.', codeIn: 'Code', link: 'Link',
+    open: 'Open on the website', unlink: 'Unlink', unlinkQ: 'Unlink this computer from your account? Servers stay on the central; your free server on this machine stops being yours.', cancel: 'Cancel', confirm: 'Confirm',
+    machine: 'This machine', remeasure: 'Measure again', measuring: 'Measuring…', os: 'System', cpu: 'Processor', ghz: 'Max GHz', threads: 'Cores / threads', ram: 'RAM', disk: 'Disk', diskSpeed: 'Write / read', net: 'Internet', ping: 'Ping to the central', isolation: 'Isolation', strong: 'strong (bubblewrap)', basic: 'basic (own folder)', bwrap: 'For strong isolation on Linux: sudo apt install bubblewrap',
+    split: 'Resource split', sys: 'System (reserve)', yours: 'Your free server', network: 'Network (for sale)', servers: 'central servers on this machine', running: 'running',
+    central: 'Central address', centralD: 'Only change it if you use another central. Changing unlinks this machine from the current account.', save: 'Save', reset: 'Back to default', saved: 'Saved', linkedOk: 'Linked!',
+    err: { local_only: 'Open this panel only on this computer (localhost).', bad_central: 'Invalid address', invalid_credentials: 'Invalid user or password', bad_code: 'Invalid code', invalid_code: 'Invalid or expired code', too_many_attempts: 'Too many attempts, wait a bit', central_offline: 'The central did not answer', link_expired: 'The request expired, try again', denied: 'Denied on the website', missing_credentials: 'Fill in user and password' } } };
+let LANG = (() => { try { return localStorage.getItem('msh.lang') || ((navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en'); } catch (e) { return 'pt'; } })();
+let light = (() => { try { return localStorage.getItem('msh.theme') === 'light'; } catch (e) { return false; } })();
+const T = () => TT[LANG] || TT.pt;
+const root = document.getElementById('root');
+const h = (t, a, ...k) => { const e = document.createElement(t); if (a) for (const [x, v] of Object.entries(a)) { if (v == null || v === false) continue; if (x.startsWith('on')) e.addEventListener(x.slice(2), v); else if (x === 'class') e.className = v; else if (x === 'style') e.style.cssText = v; else e.setAttribute(x, v === true ? '' : v); } for (const c of k.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : String(c)); return e; };
+const emsg = (e) => { const m = e && e.message || String(e); return T().err[m] || m; };
+function toast(m, bad) { const t = h('div', { class: 'toast' + (bad ? ' bad' : '') }, m); document.body.append(t); setTimeout(() => t.remove(), 3800); }
+function ask(q, onYes) { const md = h('div', { class: 'modal', onclick: (e) => { if (e.target === md) md.remove(); } }, h('div', { class: 'box' }, h('h3', {}, T().confirm), h('div', {}, q), h('div', { class: 'row' }, h('span', { class: 'sp' }), h('button', { class: 'btn', onclick: () => md.remove() }, T().cancel), h('button', { class: 'btn pri', onclick: () => { md.remove(); onYes(); } }, T().confirm)))); document.body.append(md); }
+async function api(p, b) {
+  const r = await fetch('/api/' + p, { method: b === undefined ? 'GET' : 'POST', headers: { 'X-MSH': '1', 'content-type': 'application/json' }, body: b === undefined ? undefined : JSON.stringify(b), cache: 'no-store' });
+  const j = await r.json().catch(() => ({})); if (!r.ok || j.ok === false) throw new Error(j.error || 'HTTP ' + r.status); return j;
+}
+let S = null, tab = 'site', pend = null, timer = null;
+const mb = (v) => v >= 1024 ? (Math.round(v / 102.4) / 10) + ' GB' : Math.round(v) + ' MB';
+async function load() { try { S = await api('state'); } catch (e) { S = { error: emsg(e) }; } render(); }
+function render() {
+  const t = T(); document.body.classList.toggle('light', light); document.documentElement.lang = LANG === 'en' ? 'en' : 'pt-BR';
+  if (S && S.error) { root.replaceChildren(h('div', { class: 'card' }, h('h2', {}, '⚠ ' + S.error))); return; }
+  const a = S.agent || {}; const on = a.connected;
+  const head = h('header', {}, h('img', { src: '/icon.png', alt: '' }), h('div', {}, h('h1', {}, t.title + ' ' + S.version), h('small', {}, t.sub)), h('span', { class: 'sp' }),
+    h('span', { class: 'pill ' + (on ? 'ok' : a.state === 'error' ? 'bad' : 'warn') }, h('i'), t.conn[on ? 'connected' : a.state] || a.state),
+    h('button', { class: 'btn sm', onclick: () => { LANG = LANG === 'en' ? 'pt' : 'en'; try { localStorage.setItem('msh.lang', LANG); } catch (e) { /* */ } render(); } }, LANG === 'en' ? 'PT' : 'EN'),
+    h('button', { class: 'btn sm', title: 'tema', onclick: () => { light = !light; try { localStorage.setItem('msh.theme', light ? 'light' : 'dark'); } catch (e) { /* */ } render(); } }, light ? '☾' : '☀'));
+  root.replaceChildren(head, h('div', { class: 'grid' }, accountCard(), h('div', { class: 'grid g2' }, machineCard(), splitCard()), centralCard()));
+}
+function accountCard() {
+  const t = T();
+  if (S.linked) return h('div', { class: 'card' }, h('h2', {}, '👤 ' + t.account), h('div', { class: 'row' }, h('span', { class: 'pill ok' }, h('i'), t.linked + ' ' + (S.owner || '')), h('span', { class: 'sp' }),
+    h('a', { class: 'btn pri', href: S.site, target: '_blank', rel: 'noopener' }, '↗ ' + t.open), h('button', { class: 'btn bad', onclick: () => ask(t.unlinkQ, async () => { try { S = await api('unlink', {}); render(); } catch (e) { toast(emsg(e), true); } }) }, t.unlink)),
+    h('div', { class: 'mut sm' }, t.linkedD));
+  const body = h('div', { class: 'grid' });
+  const tabs = h('div', { class: 'tabs' }, [['site', t.site], ['creds', t.creds], ['code', t.code]].map(([k, l]) => h('button', { class: 'tab' + (tab === k ? ' on' : ''), onclick: () => { tab = k; render(); } }, l)));
+  if (tab === 'site') {
+    const st = h('div', { class: 'mut sm' }, pend ? h('span', { class: 'row' }, h('span', { class: 'spin' }), t.waiting) : t.siteD);
+    body.append(st, h('div', {}, h('button', { class: 'btn pri', disabled: pend ? true : null, onclick: siteLogin }, '🌐 ' + t.siteBtn)));
+  } else if (tab === 'creds') {
+    const u = h('input', { type: 'text', autocomplete: 'username', maxlength: 120 }), p = h('input', { type: 'password', autocomplete: 'current-password', maxlength: 300 });
+    const go = async () => { b.disabled = true; try { S = await api('link/login', { user: u.value.trim(), pass: p.value }); toast(t.linkedOk); render(); } catch (e) { toast(emsg(e), true); b.disabled = false; } };
+    const b = h('button', { class: 'btn pri', onclick: go }, t.login); p.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+    body.append(h('label', { class: 'f' }, h('span', {}, t.user), u), h('label', { class: 'f' }, h('span', {}, t.pass), p), h('div', {}, b));
+  } else {
+    const c = h('input', { type: 'text', maxlength: 12, style: 'text-transform:uppercase;letter-spacing:.12em;font-weight:700' });
+    const go = async () => { try { S = await api('link/code', { code: c.value.trim().toUpperCase() }); toast(t.linkedOk); render(); } catch (e) { toast(emsg(e), true); } };
+    c.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+    body.append(h('div', { class: 'mut sm' }, t.codeD), h('label', { class: 'f' }, h('span', {}, t.codeIn), c), h('div', {}, h('button', { class: 'btn pri', onclick: go }, t.link)));
+  }
+  return h('div', { class: 'card' }, h('h2', {}, '👤 ' + t.account), h('div', { class: 'row' }, h('span', { class: 'pill warn' }, h('i'), t.unlinked)), h('div', { class: 'note' }, t.unlinkedD), tabs, body);
+}
+async function siteLogin() {
+  const t = T(); let w = null;
+  try { w = window.open('about:blank', '_blank'); } catch (e) { w = null; }
+  try {
+    const r = await api('link/site/start', {}); pend = r.id; if (w) w.location = r.url; else location.href = r.url; render();
+    const poll = async () => {
+      if (!pend) return;
+      try { const p = await api('link/site/poll', { id: pend }); if (p.state === 'ok') { pend = null; S = p; toast(t.linkedOk); render(); return; } if (p.state !== 'pending') { pend = null; toast(t.err[p.state] || p.error || p.state, true); render(); return; } } catch (e) { pend = null; toast(emsg(e), true); render(); return; }
+      setTimeout(poll, 2000);
+    };
+    setTimeout(poll, 2000);
+  } catch (e) { if (w) try { w.close(); } catch (x) { /* */ } pend = null; toast(emsg(e), true); render(); }
+}
+function machineCard() {
+  const t = T(); const m = S.machine || {};
+  const sp = (k, v) => h('div', { class: 'spec' }, h('small', {}, k), h('b', { title: String(v) }, v === '' || v == null || v === 0 ? '—' : v));
+  return h('div', { class: 'card' }, h('div', { class: 'row' }, h('h2', {}, '🖥 ' + t.machine), h('span', { class: 'sp' }), h('button', { class: 'btn sm', disabled: m.running ? true : null, onclick: async () => { try { S = await api('bench', {}); render(); setTimeout(load, 30000); } catch (e) { toast(emsg(e), true); } } }, m.running ? t.measuring : '⟳ ' + t.remeasure)),
+    h('div', { class: 'specs' }, sp(t.os, m.os), sp(t.cpu, m.cpu_model), sp(t.ghz, m.cpu_ghz ? m.cpu_ghz + ' GHz' : ''), sp(t.threads, (m.cores || '?') + ' / ' + (m.threads || '?')),
+      sp(t.ram, m.ram_mb ? mb(m.ram_mb) + (m.ram_type ? ' ' + m.ram_type : '') + (m.ram_speed_mhz ? ' · ' + m.ram_speed_mhz + ' MHz' : '') : ''), sp(t.disk, (m.disk_type || '') + ' · ' + (m.disk_free_gb || 0) + ' / ' + (m.disk_total_gb || 0) + ' GB'),
+      sp(t.diskSpeed, m.disk_write_mbs ? m.disk_write_mbs + ' / ' + m.disk_read_mbs + ' MB/s' : ''), sp(t.net, m.down_mbps ? '↓ ' + m.down_mbps + ' · ↑ ' + m.up_mbps + ' Mbps' : ''), sp(t.ping, m.ping_ms > 0 ? m.ping_ms + ' ms' : ''), sp(t.isolation, S.isolation === 'strong' ? t.strong : t.basic)),
+    S.bwrap_missing ? h('div', { class: 'note' }, t.bwrap) : null);
+}
+function splitCard() {
+  const t = T(); const n = S.node || {}; const T0 = n.total || {}, O = n.os || {}, W = n.owner || {}, C = n.central || {};
+  const bar = (k, f) => { const tot = T0[k] || 1; return h('div', { class: 'grid', style: 'gap:6px' }, h('div', { class: 'row sm' }, h('b', {}, k === 'ram_mb' ? t.ram : k === 'cores' ? 'vCores' : t.disk), h('span', { class: 'sp' }), h('span', { class: 'mut' }, f(T0[k] || 0))),
+    h('div', { class: 'bar' }, [[O, '#64748b'], [W, '#2fb36a'], [C, '#ff8a1f']].map(([x, c]) => h('i', { style: `width:${Math.max(0, (x[k] || 0) / tot * 100)}%;background:${c}`, title: f(x[k] || 0) })))); };
+  return h('div', { class: 'card' }, h('h2', {}, '🧮 ' + t.split), bar('ram_mb', mb), bar('cores', (x) => String(x)), bar('disk_gb', (x) => x + ' GB'),
+    h('div', { class: 'legend' }, h('span', { style: '--c:#64748b' }, t.sys), h('span', { style: '--c:#2fb36a' }, t.yours + (n.owner_pct ? ' (' + n.owner_pct + '%)' : '')), h('span', { style: '--c:#ff8a1f' }, t.network)),
+    h('div', { class: 'mut sm' }, S.servers + ' ' + t.servers + ' · ' + S.running + ' ' + t.running));
+}
+function centralCard() {
+  const t = T(); const i = h('input', { type: 'url', value: S.central + '/', maxlength: 220 });
+  return h('div', { class: 'card' }, h('h2', {}, '🛰 ' + t.central), h('div', { class: 'mut sm' }, t.centralD),
+    h('div', { class: 'row' }, h('div', { style: 'flex:1;min-width:220px' }, i), h('button', { class: 'btn pri', onclick: () => { const v = i.value.trim(); const go = async () => { try { S = await api('central', { central: v }); toast(t.saved); render(); } catch (e) { toast(emsg(e), true); } }; if (S.linked && v.replace(/\/$/, '') !== S.central) ask(t.centralD, go); else go(); } }, t.save),
+      h('button', { class: 'btn', onclick: async () => { try { S = await api('central', { reset: true }); toast(t.saved); render(); } catch (e) { toast(emsg(e), true); } } }, '↺ ' + t.reset + ' (' + S.central_default + ')')));
+}
+load(); setInterval(() => { if (!pend && !document.querySelector('input:focus')) load(); }, 10000);
+</script>
+</body>
+</html>
